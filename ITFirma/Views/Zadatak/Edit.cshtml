@@ -1,0 +1,66 @@
+@model ITFirma.Models.Zadatak
+
+@{
+    ViewData["Title"] = "Uredi zadatak";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Zadaci</a></li>
+        <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Naziv</a></li>
+        <li class="breadcrumb-item active">Uredi</li>
+    </ol>
+</nav>
+
+<h2 class="mb-4">Uredi zadatak</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Naziv" class="form-label"></label>
+                <input asp-for="Naziv" class="form-control" />
+                <span asp-validation-for="Naziv" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Opis" class="form-label"></label>
+                <textarea asp-for="Opis" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Opis" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ProjekatId" class="form-label"></label>
+                <select asp-for="ProjekatId" asp-items="ViewBag.ProjekatId" class="form-select"></select>
+                <span asp-validation-for="ProjekatId" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="Rok" class="form-label"></label>
+                    <input asp-for="Rok" class="form-control" type="date" />
+                    <span asp-validation-for="Rok" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-select"></select>
+                    <span asp-validation-for="Status" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Sačuvaj izmjene</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Odustani</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

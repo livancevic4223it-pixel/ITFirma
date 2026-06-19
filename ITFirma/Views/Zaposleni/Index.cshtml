@@ -1,0 +1,95 @@
+@model IEnumerable<ITFirma.Models.Zaposleni>
+
+@{
+    ViewData["Title"] = "Zaposleni";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Zaposleni</h2>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">+ Novi zaposleni</a>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Nema unesenih zaposlenih.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table id="tblZaposleni" class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Ime i prezime</th>
+                    <th>Email</th>
+                    <th>Pozicija</th>
+                    <th class="text-end no-sort">Akcije</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var z in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@z.Id" class="fw-semibold text-decoration-none">
+                                @z.PunoIme
+                            </a>
+                        </td>
+                        <td>@z.Email</td>
+                        <td>@z.Pozicija</td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@z.Id" class="btn btn-sm btn-outline-secondary">Detalji</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit"   asp-route-id="@z.Id" class="btn btn-sm btn-outline-primary">Uredi</a>
+                                <a asp-action="Delete" asp-route-id="@z.Id" class="btn btn-sm btn-outline-danger">Obriši</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+<script>
+$(function () {
+    $('#tblZaposleni').DataTable({
+        language: {
+            search:        "Pretraži:",
+            lengthMenu:    "Prikaži _MENU_ zapisa",
+            info:          "Prikazano _START_–_END_ od _TOTAL_ zapisa",
+            infoEmpty:     "Nema zapisa",
+            infoFiltered:  "(filtrirano od _MAX_ ukupno)",
+            zeroRecords:   "Nema rezultata",
+            paginate: {
+                first:    "Prva",
+                last:     "Poslednja",
+                next:     "Sledeća",
+                previous: "Prethodna"
+            }
+        },
+        pageLength: 10,
+        columnDefs: [
+            // Email — isključen iz pretrage
+            { targets: 1, searchable: false },
+            // Akcije — isključene iz sortiranja i pretrage
+            { targets: 3, orderable: false, searchable: false }
+        ],
+        // Pretraga radi po kolonama 0 (Ime) i 2 (Pozicija)
+        order: [[0, 'asc']]
+    });
+});
+</script>
+}

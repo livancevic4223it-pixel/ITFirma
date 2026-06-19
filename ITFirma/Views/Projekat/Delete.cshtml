@@ -1,0 +1,70 @@
+@model ITFirma.Models.Projekat
+
+@{
+    ViewData["Title"] = "Obriši projekat";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Projekti</a></li>
+        <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Naziv</a></li>
+        <li class="breadcrumb-item active">Obriši</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white fw-semibold">
+                Potvrdi brisanje
+            </div>
+            <div class="card-body">
+                <p>Da li ste sigurni da želite obrisati projekat <strong>@Model.Naziv</strong>?</p>
+
+                @if (Model.Zadaci.Any() || Model.Angazovanja.Any())
+                {
+                    <div class="alert alert-warning mb-3">
+                        <strong>Upozorenje:</strong> Brisanjem projekta brišu se i:
+                        <ul class="mb-0 mt-1">
+                            @if (Model.Zadaci.Any())
+                            {
+                                <li>@Model.Zadaci.Count zadatak/zadataka</li>
+                            }
+                            @if (Model.Angazovanja.Any())
+                            {
+                                <li>@Model.Angazovanja.Count angažovanje/angažovanja</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <ul class="list-unstyled mb-4">
+                    <li><span class="text-muted">Klijent:</span> @Model.Klijent?.Naziv</li>
+                    <li><span class="text-muted">Datum početka:</span> @Model.DatumPocetka.ToString("dd.MM.yyyy")</li>
+                    <li>
+                        <span class="text-muted">Status:</span>
+                        @{
+                            var badgeClass = Model.Status switch
+                            {
+                                ITFirma.Models.StatusProjekta.UToku   => "bg-primary",
+                                ITFirma.Models.StatusProjekta.Zavrsen => "bg-success",
+                                ITFirma.Models.StatusProjekta.Otkazan => "bg-danger",
+                                _                                      => "bg-secondary",
+                            };
+                        }
+                        <span class="badge @badgeClass">@Model.Status</span>
+                    </li>
+                </ul>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Da, obriši</button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Odustani</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

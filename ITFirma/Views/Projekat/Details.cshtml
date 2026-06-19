@@ -1,0 +1,202 @@
+@model ITFirma.Models.Projekat
+
+@{
+    ViewData["Title"] = Model.Naziv;
+    var badgeClass = Model.Status switch
+    {
+        ITFirma.Models.StatusProjekta.UToku   => "bg-primary",
+        ITFirma.Models.StatusProjekta.Zavrsen => "bg-success",
+        ITFirma.Models.StatusProjekta.Otkazan => "bg-danger",
+        _                                      => "bg-secondary",
+    };
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Projekti</a></li>
+        <li class="breadcrumb-item active">@Model.Naziv</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="mb-1">@Model.Naziv</h2>
+        <span class="badge @badgeClass fs-6">@Model.Status</span>
+    </div>
+    <div>
+        <a asp-action="Edit"   asp-route-id="@Model.Id" class="btn btn-outline-primary">Uredi</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger ms-1">Obriši</a>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    @* Klijent + osnovno *@
+    <div class="col-md-4">
+        <div class="row g-3">
+            @* Klijent kartica — Partial View *@
+            <div class="col-12">
+                @if (Model.Klijent != null)
+                {
+                    await Html.RenderPartialAsync("_KlijentKartica", Model.Klijent);
+                }
+            </div>
+
+            @* Detalji projekta *@
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header fw-semibold">Informacije o projektu</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <span class="text-muted small">Datum početka</span><br />
+                            @Model.DatumPocetka.ToString("dd.MM.yyyy")
+                        </li>
+                        <li class="list-group-item">
+                            <span class="text-muted small">Datum završetka</span><br />
+                            @(Model.DatumZavrsetka.HasValue ? Model.DatumZavrsetka.Value.ToString("dd.MM.yyyy") : "—")
+                        </li>
+                        @if (!string.IsNullOrWhiteSpace(Model.Opis))
+                        {
+                            <li class="list-group-item">
+                                <span class="text-muted small">Opis</span><br />
+                                @Model.Opis
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Angažovani zaposleni *@
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                Angažovani zaposleni
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">@Model.Angazovanja.Count</span>
+                    <a asp-controller="Angazovanje" asp-action="Create"
+                       asp-route-projekatId="@Model.Id"
+                       class="btn btn-sm btn-outline-primary">+ Dodaj</a>
+                </div>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show m-2" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show m-2" role="alert">
+                    @TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!Model.Angazovanja.Any())
+            {
+                <div class="card-body text-muted">Nema angažovanih zaposlenih.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Zaposleni</th>
+                                <th>Uloga</th>
+                                <th>Satnica</th>
+                                <th>Datum od</th>
+                                <th class="text-end">Akcije</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Angazovanja.OrderBy(x => x.Zaposleni?.Prezime))
+                            {
+                                var ulogaBadge = a.Uloga switch
+                                {
+                                    "Lead" => "bg-danger",
+                                    "Dev"  => "bg-primary",
+                                    "QA"   => "bg-warning text-dark",
+                                    _      => "bg-secondary",
+                                };
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Zaposleni" asp-action="Details"
+                                           asp-route-id="@a.ZaposleniId" class="text-decoration-none">
+                                            @a.Zaposleni?.PunoIme
+                                        </a>
+                                    </td>
+                                    <td><span class="badge @ulogaBadge">@a.Uloga</span></td>
+                                    <td>@a.Satnica.ToString("0.00") €/h</td>
+                                    <td>@a.DatumOd.ToString("dd.MM.yyyy")</td>
+                                    <td class="text-end">
+                                        <a asp-controller="Angazovanje" asp-action="Edit"
+                                           asp-route-projekatId="@a.ProjekatId"
+                                           asp-route-zaposleniId="@a.ZaposleniId"
+                                           class="btn btn-sm btn-outline-primary">Uredi</a>
+                                        <a asp-controller="Angazovanje" asp-action="Delete"
+                                           asp-route-projekatId="@a.ProjekatId"
+                                           asp-route-zaposleniId="@a.ZaposleniId"
+                                           class="btn btn-sm btn-outline-danger">Ukloni</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        @* Zadaci *@
+        <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                Zadaci
+                <span class="badge bg-secondary">@Model.Zadaci.Count</span>
+            </div>
+            @if (!Model.Zadaci.Any())
+            {
+                <div class="card-body text-muted">Nema zadataka na ovom projektu.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Naziv</th>
+                                <th>Rok</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var z in Model.Zadaci.OrderBy(x => x.Rok))
+                            {
+                                var zBadge = z.Status switch
+                                {
+                                    ITFirma.Models.StatusZadatka.UToku   => "bg-primary",
+                                    ITFirma.Models.StatusZadatka.Zavrsen => "bg-success",
+                                    _                                     => "bg-secondary",
+                                };
+                                <tr>
+                                    <td>@z.Naziv</td>
+                                    <td class="@(z.Rok < DateTime.Today && z.Status != ITFirma.Models.StatusZadatka.Zavrsen ? "text-danger fw-semibold" : "")">
+                                        @z.Rok.ToString("dd.MM.yyyy")
+                                    </td>
+                                    <td><span class="badge @zBadge">@z.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-outline-secondary">← Nazad na listu</a>
+</div>

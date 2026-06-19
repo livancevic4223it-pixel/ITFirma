@@ -1,0 +1,30 @@
+## .NET / ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+
+## Publish
+publish/
+**/publish/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Logs
+logs/
+*.log
+
+## OS
+.DS_Store
+Thumbs.db
+
+## LocalDB / connection string overrides (ne commituj Development overrides)
+**/appsettings.Development.json

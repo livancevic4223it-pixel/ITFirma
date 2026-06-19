@@ -1,0 +1,104 @@
+@model ITFirma.Models.Zadatak
+
+@{
+    ViewData["Title"] = Model.Naziv;
+    var zBadge = Model.Status switch
+    {
+        ITFirma.Models.StatusZadatka.UToku   => "bg-primary",
+        ITFirma.Models.StatusZadatka.Zavrsen => "bg-success",
+        _                                     => "bg-secondary",
+    };
+    bool prekoracen = Model.Rok < DateTime.Today && Model.Status != ITFirma.Models.StatusZadatka.Zavrsen;
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Zadaci</a></li>
+        <li class="breadcrumb-item active">@Model.Naziv</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="mb-1">@Model.Naziv</h2>
+        <span class="badge @zBadge fs-6">@Model.Status</span>
+        @if (prekoracen)
+        {
+            <span class="badge bg-danger ms-1 fs-6">Prekoračen rok</span>
+        }
+    </div>
+    <div>
+        <a asp-action="Edit"   asp-route-id="@Model.Id" class="btn btn-outline-primary">Uredi</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger ms-1">Obriši</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header fw-semibold">Detalji zadatka</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <span class="text-muted small">Rok</span><br />
+                    <span class="@(prekoracen ? "text-danger fw-semibold" : "")">
+                        @Model.Rok.ToString("dd.MM.yyyy")
+                        @if (prekoracen)
+                        {
+                            <span class="ms-1 small">(prekoračen)</span>
+                        }
+                    </span>
+                </li>
+                @if (!string.IsNullOrWhiteSpace(Model.Opis))
+                {
+                    <li class="list-group-item">
+                        <span class="text-muted small">Opis</span><br />
+                        @Model.Opis
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header fw-semibold">Projekat</div>
+            @if (Model.Projekat != null)
+            {
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <span class="text-muted small">Naziv</span><br />
+                        <a asp-controller="Projekat" asp-action="Details" asp-route-id="@Model.ProjekatId"
+                           class="fw-semibold text-decoration-none">
+                            @Model.Projekat.Naziv
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="text-muted small">Klijent</span><br />
+                        @Model.Projekat.Klijent?.Naziv
+                    </li>
+                    <li class="list-group-item">
+                        <span class="text-muted small">Datum početka projekta</span><br />
+                        @Model.Projekat.DatumPocetka.ToString("dd.MM.yyyy")
+                    </li>
+                    <li class="list-group-item">
+                        <span class="text-muted small">Status projekta</span><br />
+                        @{
+                            var pBadge = Model.Projekat.Status switch
+                            {
+                                ITFirma.Models.StatusProjekta.UToku   => "bg-primary",
+                                ITFirma.Models.StatusProjekta.Zavrsen => "bg-success",
+                                ITFirma.Models.StatusProjekta.Otkazan => "bg-danger",
+                                _                                      => "bg-secondary",
+                            };
+                        }
+                        <span class="badge @pBadge">@Model.Projekat.Status</span>
+                    </li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-outline-secondary">← Nazad na listu</a>
+</div>

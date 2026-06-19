@@ -1,0 +1,172 @@
+@model ITFirma.ViewModels.ProjekatIndexVM
+
+@{
+    ViewData["Title"] = "Projekti";
+
+    var sort   = Model.Sort;
+    var filter = Model.Filter;
+    // Normalize: null sort = "datum" ASC (default)
+    var sortNow = sort ?? "datum";
+
+    // Toggle: isti klik mijenja ASC→DESC, različit klik ide na ASC
+    string ToggleSort(string col)
+        => sortNow == col ? col + "_desc" : col;
+
+    // Ikona smjera — plain Unicode, sigurno za @variable
+    string Arrow(string col)
+    {
+        if (sortNow == col)               return " ▲";
+        if (sortNow == col + "_desc")     return " ▼";
+        return "";
+    }
+
+    // Pre-računato da se izbjegnu stringovi unutar href="@FN("...") atributa
+    var urlNaziv   = Url.Action("Index", new { page = 1, sort = ToggleSort("naziv"),   filter });
+    var urlKlijent = Url.Action("Index", new { page = 1, sort = ToggleSort("klijent"), filter });
+    var urlDatum   = Url.Action("Index", new { page = 1, sort = ToggleSort("datum"),   filter });
+    var urlStatus  = Url.Action("Index", new { page = 1, sort = ToggleSort("status"),  filter });
+
+    var iconNaziv   = Arrow("naziv");
+    var iconKlijent = Arrow("klijent");
+    var iconDatum   = Arrow("datum");
+    var iconStatus  = Arrow("status");
+
+    string PageUrl(int p) => Url.Action("Index", new { page = p, sort, filter })!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Projekti</h2>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">+ Novi projekat</a>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ── Filter po statusu ───────────────────────────────────────────────── *@
+<form method="get" asp-action="Index" class="mb-3 d-flex align-items-center gap-2">
+    <input type="hidden" name="sort" value="@sort" />
+    <label for="filterSelect" class="form-label mb-0 fw-semibold">Filter po statusu:</label>
+    <select id="filterSelect" name="filter" class="form-select form-select-sm w-auto"
+            onchange="this.form.submit()">
+        <option value="">— Svi statusi —</option>
+        @foreach (var s in Enum.GetValues<ITFirma.Models.StatusProjekta>())
+        {
+            if (filter == s.ToString())
+            {
+                <option value="@s" selected>@s</option>
+            }
+            else
+            {
+                <option value="@s">@s</option>
+            }
+        }
+    </select>
+    @if (!string.IsNullOrEmpty(filter))
+    {
+        <a asp-action="Index" asp-route-sort="@sort" class="btn btn-sm btn-outline-secondary">✕ Očisti</a>
+    }
+</form>
+
+@if (!Model.Projekti.Any() && string.IsNullOrEmpty(filter))
+{
+    <div class="alert alert-info">Nema unesenih projekata.</div>
+}
+else if (!Model.Projekti.Any())
+{
+    <div class="alert alert-info">Nema projekata s odabranim statusom.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        <a href="@urlNaziv" class="text-white text-decoration-none">Naziv@iconNaziv</a>
+                    </th>
+                    <th>
+                        <a href="@urlKlijent" class="text-white text-decoration-none">Klijent@iconKlijent</a>
+                    </th>
+                    <th>
+                        <a href="@urlDatum" class="text-white text-decoration-none">Datum početka@iconDatum</a>
+                    </th>
+                    <th>Datum završetka</th>
+                    <th>
+                        <a href="@urlStatus" class="text-white text-decoration-none">Status@iconStatus</a>
+                    </th>
+                    <th class="text-end">Akcije</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Projekti)
+                {
+                    var badgeClass = p.Status switch
+                    {
+                        ITFirma.Models.StatusProjekta.UToku   => "bg-primary",
+                        ITFirma.Models.StatusProjekta.Zavrsen => "bg-success",
+                        ITFirma.Models.StatusProjekta.Otkazan => "bg-danger",
+                        _                                      => "bg-secondary",
+                    };
+                    <tr>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@p.Id" class="fw-semibold text-decoration-none">
+                                @p.Naziv
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-controller="Klijent" asp-action="Details" asp-route-id="@p.KlijentId"
+                               class="text-decoration-none text-muted">
+                                @p.Klijent?.Naziv
+                            </a>
+                        </td>
+                        <td>@p.DatumPocetka.ToString("dd.MM.yyyy")</td>
+                        <td>@(p.DatumZavrsetka.HasValue ? p.DatumZavrsetka.Value.ToString("dd.MM.yyyy") : "—")</td>
+                        <td><span class="badge @badgeClass">@p.Status</span></td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">Detalji</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit"   asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Uredi</a>
+                                <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Obriši</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ── Paginacija ─────────────────────────────────────────────────────── *@
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Paginacija projekata">
+            <ul class="pagination pagination-sm justify-content-center">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@PageUrl(Model.CurrentPage - 1)">&laquo;</a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="@PageUrl(i)">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@PageUrl(Model.CurrentPage + 1)">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-muted small">
+            Stranica @Model.CurrentPage od @Model.TotalPages
+            (@((Model.CurrentPage - 1) * Model.PageSize + 1)–@(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount))
+            od ukupno @Model.TotalCount projekata)
+        </p>
+    }
+}

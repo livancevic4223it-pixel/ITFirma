@@ -1,0 +1,61 @@
+@model ITFirma.Models.Angazovanje
+
+@{
+    ViewData["Title"] = "Ukloni angažovanje";
+    var ulogaBadge = Model.Uloga switch
+    {
+        "Lead" => "bg-danger",
+        "Dev"  => "bg-primary",
+        "QA"   => "bg-warning text-dark",
+        _      => "bg-secondary",
+    };
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Projekat" asp-action="Index">Projekti</a></li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Projekat" asp-action="Details" asp-route-id="@Model.ProjekatId">
+                @Model.Projekat?.Naziv
+            </a>
+        </li>
+        <li class="breadcrumb-item active">Ukloni angažovanje</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white fw-semibold">
+                Potvrdi uklanjanje
+            </div>
+            <div class="card-body">
+                <p>
+                    Da li ste sigurni da želite ukloniti
+                    <strong>@Model.Zaposleni?.PunoIme</strong>
+                    sa projekta <strong>@Model.Projekat?.Naziv</strong>?
+                </p>
+
+                <ul class="list-unstyled mb-4">
+                    <li>
+                        <span class="text-muted">Uloga:</span>
+                        <span class="badge @ulogaBadge ms-1">@Model.Uloga</span>
+                    </li>
+                    <li><span class="text-muted">Satnica:</span> @Model.Satnica.ToString("0.00") €/h</li>
+                    <li><span class="text-muted">Datum od:</span> @Model.DatumOd.ToString("dd.MM.yyyy")</li>
+                </ul>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="projekatId"  value="@Model.ProjekatId" />
+                    <input type="hidden" name="zaposleniId" value="@Model.ZaposleniId" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Da, ukloni</button>
+                        <a asp-controller="Projekat" asp-action="Details" asp-route-id="@Model.ProjekatId"
+                           class="btn btn-outline-secondary">Odustani</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

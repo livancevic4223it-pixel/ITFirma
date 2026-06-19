@@ -1,0 +1,73 @@
+@model ITFirma.Models.Projekat
+
+@{
+    ViewData["Title"] = "Novi projekat";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Projekti</a></li>
+        <li class="breadcrumb-item active">Novi projekat</li>
+    </ol>
+</nav>
+
+<h2 class="mb-4">Novi projekat</h2>
+
+<div class="row">
+    <div class="col-md-7">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Naziv" class="form-label"></label>
+                <input asp-for="Naziv" class="form-control" placeholder="Naziv projekta" />
+                <span asp-validation-for="Naziv" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Opis" class="form-label"></label>
+                <textarea asp-for="Opis" class="form-control" rows="3" placeholder="Kratki opis projekta..."></textarea>
+                <span asp-validation-for="Opis" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="DatumPocetka" class="form-label"></label>
+                    <input asp-for="DatumPocetka" class="form-control" type="date" />
+                    <span asp-validation-for="DatumPocetka" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="DatumZavrsetka" class="form-label"></label>
+                    <input asp-for="DatumZavrsetka" class="form-control" type="date" />
+                    <span asp-validation-for="DatumZavrsetka" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="KlijentId" class="form-label"></label>
+                    <select asp-for="KlijentId" asp-items="ViewBag.KlijentId" class="form-select">
+                        <option value="">— Odaberi klijenta —</option>
+                    </select>
+                    <span asp-validation-for="KlijentId" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-select"></select>
+                    <span asp-validation-for="Status" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Sačuvaj</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Odustani</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

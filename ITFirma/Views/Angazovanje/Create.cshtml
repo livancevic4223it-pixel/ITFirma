@@ -1,0 +1,73 @@
+@model ITFirma.Models.Angazovanje
+
+@{
+    ViewData["Title"] = "Dodaj angažovanje";
+    int projekatId = (int)ViewBag.ProjekatId;
+    string projekatNaziv = (string)ViewBag.ProjekatNaziv;
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Projekat" asp-action="Index">Projekti</a></li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Projekat" asp-action="Details" asp-route-id="@projekatId">@projekatNaziv</a>
+        </li>
+        <li class="breadcrumb-item active">Dodaj angažovanje</li>
+    </ol>
+</nav>
+
+<h2 class="mb-1">Dodaj angažovanje</h2>
+<p class="text-muted mb-4">Projekat: <strong>@projekatNaziv</strong></p>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ProjekatId" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="ZaposleniId" class="form-label">Zaposleni</label>
+                <select asp-for="ZaposleniId" asp-items="ViewBag.ZaposleniId" class="form-select">
+                    <option value="">— Odaberi zaposlenog —</option>
+                </select>
+                <span asp-validation-for="ZaposleniId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Uloga" class="form-label"></label>
+                <select asp-for="Uloga" asp-items="ViewBag.UlogaList" class="form-select">
+                    <option value="">— Odaberi ulogu —</option>
+                </select>
+                <span asp-validation-for="Uloga" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="Satnica" class="form-label"></label>
+                    <div class="input-group">
+                        <input asp-for="Satnica" class="form-control" placeholder="0.00" />
+                        <span class="input-group-text">€/h</span>
+                    </div>
+                    <span asp-validation-for="Satnica" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="DatumOd" class="form-label"></label>
+                    <input asp-for="DatumOd" class="form-control" type="date" />
+                    <span asp-validation-for="DatumOd" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Dodaj</button>
+                <a asp-controller="Projekat" asp-action="Details" asp-route-id="@projekatId"
+                   class="btn btn-outline-secondary">Odustani</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

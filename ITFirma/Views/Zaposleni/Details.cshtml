@@ -1,0 +1,111 @@
+@model ITFirma.Models.Zaposleni
+
+@{
+    ViewData["Title"] = Model.PunoIme;
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Zaposleni</a></li>
+        <li class="breadcrumb-item active">@Model.PunoIme</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <h2 class="mb-0">@Model.PunoIme</h2>
+    <div>
+        <a asp-action="Edit"   asp-route-id="@Model.Id" class="btn btn-outline-primary">Uredi</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger ms-1">Obriši</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header fw-semibold">Podaci</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <span class="text-muted small">Pozicija</span><br />
+                    <span class="badge bg-secondary fs-6">@Model.Pozicija</span>
+                </li>
+                <li class="list-group-item">
+                    <span class="text-muted small">Email</span><br />
+                    <a href="mailto:@Model.Email">@Model.Email</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                Angažovanja na projektima
+                <span class="badge bg-secondary">@Model.Angazovanja.Count</span>
+            </div>
+            @if (!Model.Angazovanja.Any())
+            {
+                <div class="card-body text-muted">Zaposleni nije angažovan ni na jednom projektu.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Projekat</th>
+                                <th>Uloga</th>
+                                <th>Satnica</th>
+                                <th>Datum od</th>
+                                <th>Status projekta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Angazovanja.OrderByDescending(x => x.DatumOd))
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Projekat" asp-action="Details" asp-route-id="@a.ProjekatId"
+                                           class="text-decoration-none fw-semibold">
+                                            @a.Projekat?.Naziv
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var ulogaBadge = a.Uloga switch
+                                            {
+                                                "Lead" => "bg-danger",
+                                                "Dev"  => "bg-primary",
+                                                "QA"   => "bg-warning text-dark",
+                                                _      => "bg-secondary",
+                                            };
+                                        }
+                                        <span class="badge @ulogaBadge">@a.Uloga</span>
+                                    </td>
+                                    <td>@a.Satnica.ToString("0.00") €/h</td>
+                                    <td>@a.DatumOd.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (a.Projekat != null)
+                                        {
+                                            var statusBadge = a.Projekat.Status switch
+                                            {
+                                                ITFirma.Models.StatusProjekta.UToku   => "bg-primary",
+                                                ITFirma.Models.StatusProjekta.Zavrsen => "bg-success",
+                                                ITFirma.Models.StatusProjekta.Otkazan => "bg-danger",
+                                                _                                      => "bg-secondary",
+                                            };
+                                            <span class="badge @statusBadge">@a.Projekat.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-outline-secondary">← Nazad na listu</a>
+</div>

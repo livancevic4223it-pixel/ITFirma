@@ -1,0 +1,61 @@
+@model IEnumerable<ITFirma.Models.Klijent>
+
+@{
+    ViewData["Title"] = "Klijenti";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Klijenti</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novi klijent
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Nema unesenih klijenata.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Naziv</th>
+                    <th>Email</th>
+                    <th>Telefon</th>
+                    <th>Adresa</th>
+                    <th class="text-end">Akcije</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var k in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@k.Id" class="fw-semibold text-decoration-none">
+                                @k.Naziv
+                            </a>
+                        </td>
+                        <td>@k.Email</td>
+                        <td>@(k.Telefon ?? "—")</td>
+                        <td>@(k.Adresa ?? "—")</td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@k.Id" class="btn btn-sm btn-outline-secondary">Detalji</a>
+                            <a asp-action="Edit"    asp-route-id="@k.Id" class="btn btn-sm btn-outline-primary">Uredi</a>
+                            <a asp-action="Delete"  asp-route-id="@k.Id" class="btn btn-sm btn-outline-danger">Obriši</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
